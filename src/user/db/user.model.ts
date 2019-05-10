@@ -1,6 +1,7 @@
 import { arrayProp, prop, Ref, Typegoose } from 'typegoose'
-import { IsEmail, IsPhoneNumber, IsString, IsUrl } from 'class-validator'
+import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsUrl } from 'class-validator'
 import * as dayjs from 'dayjs'
+import { isEmptyAll } from '../../shared/util'
 
 export class Social {
 
@@ -19,7 +20,14 @@ export class UserModel extends Typegoose {
   @prop({ required: true })
   password: string
 
-  @prop({ required: true })
+  @IsNotEmpty()
+  @prop({
+    required: true,
+    /*validate: (value: string) => {
+      debugger
+      return !isEmptyAll(value)
+    }*/
+  })
   name: string
 
   @prop({ required: true, unique: true })

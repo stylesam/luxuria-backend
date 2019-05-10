@@ -80,7 +80,7 @@
     ],
     "max-line-length": [
       true,
-      140
+      160
     ],
     "no-increment-decrement": false,
     "eofline": false,

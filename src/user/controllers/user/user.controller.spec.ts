@@ -1,18 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UserController } from './user.controller';
+import { UserController } from './user.controller'
+import { UserService } from '../../services/user/user.service'
+import { Test } from '@nestjs/testing'
+import { TypegooseModule } from 'nestjs-typegoose'
+import { UserModel } from '../../db/user.model'
 
-describe('UserModel Controller', () => {
-  let controller: UserController;
+describe('UserController', () => {
+  let userController: UserController
+  let userService: UserService
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [UserController],
-    }).compile();
+    const module = await Test.createTestingModule({
+      controllers: [ UserController ],
+      providers: [ UserService ],
+      imports: [  TypegooseModule.forFeature(UserModel) ]
+    }).compile()
 
-    controller = module.get<UserController>(UserController);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
+    userController = module.get(UserController)
+    userService = module.get(UserService)
+  })
+})

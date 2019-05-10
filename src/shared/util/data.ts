@@ -32,6 +32,10 @@ export function isEmpty(obj) {
   return isNull(obj) || isUndefined(obj)
 }
 
+export function isEmptyAll(obj) {
+  return isEmpty(obj) || obj === ''
+}
+
 export function isEmptyObject(obj) {
   return !(obj && Object.keys(obj).length > 0)
 }

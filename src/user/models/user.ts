@@ -21,7 +21,6 @@ export class User {
   @ApiModelProperty({
     description: 'ID',
     example: '5cd433c27446e41be07c6ffa'
-
   })
   _id: string
 

@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Res, Param } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Res, Param, Query, HttpException, BadRequestException } from '@nestjs/common'
 import { ApiUseTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { Response } from 'express'
 import { of } from 'rxjs'
-import { catchError, tap } from 'rxjs/operators'
+import { catchError, map, tap } from 'rxjs/operators'
 
 import { User } from '../../models/user'
 import { UserService } from '../../services/user/user.service'
@@ -10,7 +10,7 @@ import { isEmpty } from '../../../shared/util'
 
 import { Dictionary } from '../../../shared/models'
 
-@ApiUseTags('authors-controller')
+@ApiUseTags('users-controller')
 @Controller('users')
 export class UserController {
   public constructor(private userService: UserService) {
@@ -56,7 +56,9 @@ export class UserController {
   @ApiBearerAuth()
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  public update(@Param('id') id: string, @Body() userDTO: Dictionary<any>, @Res() response: Response) {
+  public update(@Param('id') id: string,
+                @Body() userDTO: Dictionary<any>,
+                @Res() response: Response) {
     return this.userService.updateById(id, userDTO).pipe(
       tap((user: User) => response.json(user)),
       catchError((error) => of(error).pipe(
@@ -71,16 +73,13 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   public delete(@Param('id') id: string, @Res() response: Response) {
     return this.userService.deleteById(id).pipe(
-      tap((data) => {
+      map((data) => {
         if (!isEmpty(data)) {
-          response.json({ success: true, msg: 'User has been deleted' })
+          response.json({ statusCode: 200, success: true, message: 'User has been deleted' })
         } else {
-          response.status(HttpStatus.BAD_REQUEST).json({ success: false, msg: 'User with that ID does not exist' })
+          throw new HttpException('User with that ID does not exist', HttpStatus.BAD_REQUEST)
         }
-      }),
-      catchError((error) => of(error).pipe(
-        tap(error => response.status(HttpStatus.CONFLICT).json(error))
-      ))
+      })
     )
   }
 
@@ -90,6 +89,34 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   public getFriends(@Param('id') id: string) {
     return this.userService.getAllFriends(id)
+  }
+
+  @ApiOperation({ title: 'Добавить друга в список друзей' })
+  @ApiBearerAuth()
+  @Patch(':id/friends')
+  @HttpCode(HttpStatus.OK)
+  public addFriend(@Param('id') id: string, @Query('candidateFriendId') candidateFriendId: string) {
+    if (id === candidateFriendId) throw new HttpException('You can not add yourself to friends', HttpStatus.CONFLICT)
+
+    return this.userService.addUserToFriendList(id, candidateFriendId)
+  }
+
+  @ApiOperation({ title: 'Удалить друга из списока друзей' })
+  @ApiBearerAuth()
+  @Delete(':id/friends')
+  @HttpCode(HttpStatus.OK)
+  public deleteFriend(@Param('id') id: string, @Query('candidateFriendId') candidateFriendId: string, @Res() response: Response) {
+    if (id === candidateFriendId) throw new BadRequestException('Ids can not match')
+
+    return this.userService.deleteUserFromFriendList(id, candidateFriendId).pipe(
+      map((data) => {
+        if (!isEmpty(data)) {
+          response.json({ statusCode: 200, success: true, message: 'User has been deleted' })
+        } else {
+          throw new BadRequestException('User with that ID does not exist')
+        }
+      })
+    )
   }
 
 }
