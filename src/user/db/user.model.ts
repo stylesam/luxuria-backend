@@ -14,7 +14,7 @@ export class Social {
 
 export class UserModel extends Typegoose {
 
-  @prop({ required: true, unique: true, lowercase: true })
+  @prop({ required: true, unique: true, lowercase: true, validate: /^[a-z0-9_-]{2,16}$/ })
   login: string
 
   @prop({ required: true })
@@ -22,7 +22,7 @@ export class UserModel extends Typegoose {
 
   @IsNotEmpty()
   @prop({
-    required: true,
+    required: true
     /*validate: (value: string) => {
       debugger
       return !isEmptyAll(value)
@@ -37,7 +37,7 @@ export class UserModel extends Typegoose {
   @prop({ default: '' })
   lastName: string
 
-  @prop({ default: '' })
+  @prop({ default: '', validate: /^[A-Z0-9._%+-]+@[A-Z0-9-]+.+.[A-Z]{2,4}$/i })
   @IsEmail()
   email: string
 
