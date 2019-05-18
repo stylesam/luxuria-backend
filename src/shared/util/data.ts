@@ -1,5 +1,3 @@
-import { Subscription } from 'rxjs'
-
 export function isObject(obj) {
   return typeof obj === 'object'
 }
@@ -38,16 +36,4 @@ export function isEmptyAll(obj) {
 
 export function isEmptyObject(obj) {
   return !(obj && Object.keys(obj).length > 0)
-}
-
-export function excludePropertyFromObj(propertyName: string, fromObj: Object): Object {
-  let exludedObj = {}
-
-  for (let key in fromObj) {
-    if (key === propertyName) continue
-
-    exludedObj[ key ] = fromObj[ key ]
-  }
-
-  return exludedObj
 }
