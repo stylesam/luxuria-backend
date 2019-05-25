@@ -16,7 +16,7 @@ export class Social {
 }
 
 
-export class User {
+export class UserDTO {
 
   @ApiModelProperty({
     description: 'ID',

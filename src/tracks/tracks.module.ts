@@ -7,11 +7,11 @@ import { TelemetryController } from './controllers/telemetry/telemetry.controlle
 
 import { TelemetryService } from './services/telemetry/telemetry.service'
 
-import { TelemetryModel } from './db'
+import { Telemetry } from './db'
 
 @Module({
   controllers: [ TracksController, TelemetryController ],
   providers: [ TracksService, TelemetryService ],
-  imports: [ TypegooseModule.forFeature(TelemetryModel) ]
+  imports: [ TypegooseModule.forFeature(Telemetry) ]
 })
 export class TracksModule {}

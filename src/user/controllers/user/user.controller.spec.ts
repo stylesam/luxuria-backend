@@ -2,7 +2,7 @@ import { UserController } from './user.controller'
 import { UserService } from '../../services/user/user.service'
 import { Test } from '@nestjs/testing'
 import { TypegooseModule } from 'nestjs-typegoose'
-import { UserModel } from '../../db/user.model'
+import { User } from '../../db/user'
 
 describe('UserController', () => {
   let userController: UserController
@@ -12,7 +12,7 @@ describe('UserController', () => {
     const module = await Test.createTestingModule({
       controllers: [ UserController ],
       providers: [ UserService ],
-      imports: [  TypegooseModule.forFeature(UserModel) ]
+      imports: [  TypegooseModule.forFeature(User) ]
     }).compile()
 
     userController = module.get(UserController)

@@ -6,36 +6,37 @@ import { hashSync } from 'bcrypt'
 import { of, from } from 'rxjs'
 import { map, switchMap, toArray, pluck } from 'rxjs/operators'
 
-import { UserModel } from '../../db/user.model'
-import { User } from '../../models/user'
+import { User } from '../../db/user'
+import { UserDTO } from '../../models/user'
 import { ObjectId } from 'bson'
+import { getCurrentTime } from '../../../shared/util'
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(UserModel) private userModel: ModelType<User>) {
+  constructor(@InjectModel(User) private userModel: ModelType<UserDTO>) {
   }
 
-  public create(user: User) {
+  public create(user: UserDTO) {
     return of(user).pipe(
-      map((user: User) => ({ ...user, password: hashSync(user.password, 10) })),
-      map((user: User) => new this.userModel(user)),
+      map((user: UserDTO) => ({ ...user, password: hashSync(user.password, 10) })),
+      map((user: UserDTO) => new this.userModel(user)),
       switchMap((user) => from(user.save()).pipe(
         map((userDoc: Document) => userDoc.toObject()),
-        map((user: User) => this.filterUserData(user))
+        map((user: UserDTO) => this.filterUserData(user))
       ))
     )
   }
 
   public getOneById(id: string) {
     return from(this.userModel.findById(id).lean()).pipe(
-      map((user: User) => this.filterUserData(user))
+      map((user: UserDTO) => this.filterUserData(user))
     )
   }
 
   public getAll() {
     return from(this.userModel.find().lean()).pipe(
       switchMap(users => from(users).pipe(
-        map((user: User) => this.filterUserData(user))
+        map((user: UserDTO) => this.filterUserData(user))
       )),
       toArray()
     )
@@ -46,8 +47,8 @@ export class UserService {
   }
 
   public updateById(id: string, data: object) {
-    return from(this.userModel.findByIdAndUpdate(id, { $set: data }, { new: true }).lean()).pipe(
-      map((user: User) => this.filterUserData(user))
+    return from(this.userModel.findByIdAndUpdate(id, { $set: { ...data, updatedAt: getCurrentTime() } }, { new: true }).lean()).pipe(
+      map((user: UserDTO) => this.filterUserData(user))
     )
   }
 
@@ -63,13 +64,13 @@ export class UserService {
       pluck('friends'),
       switchMap((friends: ObjectId[]) => this.isExistUser(candidateId).pipe(
         map((isUserExist: boolean) => {
-          if (!isUserExist) throw new BadRequestException('User with that ID does not exist')
+          if (!isUserExist) throw new BadRequestException('UserDTO with that ID does not exist')
           return friends
         })
       )),
       switchMap((friends: ObjectId[]) => this.isUserExistInFriendList(candidateId, friends).pipe(
         map((isUserExistInFriendList: boolean) => {
-          if (isUserExistInFriendList) throw new BadRequestException('User with that ID already exist in friend list')
+          if (isUserExistInFriendList) throw new BadRequestException('UserDTO with that ID already exist in friend list')
           return friends
         })
       )),
@@ -87,13 +88,13 @@ export class UserService {
       pluck('friends'),
       switchMap((friends: ObjectId[]) => this.isExistUser(candidateId).pipe(
         map((isUserExist: boolean) => {
-          if (!isUserExist) throw new BadRequestException('User with that ID does not exist')
+          if (!isUserExist) throw new BadRequestException('UserDTO with that ID does not exist')
           return friends
         })
       )),
       switchMap((friends: ObjectId[]) => this.isUserExistInFriendList(candidateId, friends).pipe(
         map((isUserExistInFriendList: boolean) => {
-          if (!isUserExistInFriendList) throw new BadRequestException('User with that ID does not exist in friend list')
+          if (!isUserExistInFriendList) throw new BadRequestException('UserDTO with that ID does not exist in friend list')
           return friends
         })
       )),
@@ -102,7 +103,7 @@ export class UserService {
     )
   }
 
-  private filterUserData(user: User) {
+  private filterUserData(user: UserDTO) {
     const { password, friends, __v, ...filteredUser } = user
 
     return filteredUser

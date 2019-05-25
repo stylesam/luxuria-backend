@@ -1,7 +1,6 @@
 import { arrayProp, prop, Ref, Typegoose } from 'typegoose'
 import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsUrl } from 'class-validator'
-import * as dayjs from 'dayjs'
-import { isEmptyAll } from '../../shared/util'
+import { getCurrentTime } from '../../shared/util'
 
 export class Social {
 
@@ -12,7 +11,7 @@ export class Social {
   url: string
 }
 
-export class UserModel extends Typegoose {
+export class User extends Typegoose {
 
   @prop({ required: true, unique: true, lowercase: true, validate: /^[a-z0-9_-]{2,16}$/ })
   login: string
@@ -44,22 +43,14 @@ export class UserModel extends Typegoose {
   @arrayProp({ items: Object, default: [] })
   socials: Social[]
 
-  @arrayProp({ itemsRef: UserModel, default: [] })
-  friends: Ref<UserModel>[]
+  @arrayProp({ itemsRef: User, default: [] })
+  friends: Ref<User>[]
 
-  @prop({
-    get default() {
-      return dayjs().toISOString()
-    }
-  })
-  createdAt: string
+  @prop({ default: getCurrentTime() })
+  createdAt: number
 
-  @prop({
-    get default() {
-      return dayjs().toISOString()
-    }
-  })
-  updatedAt: string
+  @prop({ default: getCurrentTime() })
+  updatedAt: number
 
   @prop()
   get fullName() {

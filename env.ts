@@ -8,7 +8,7 @@ export const env = {
   },
   database: {
     port: 27017,
-    name: 'blog',
+    name: 'luxuria',
     host: 'localhost'
   }
 }

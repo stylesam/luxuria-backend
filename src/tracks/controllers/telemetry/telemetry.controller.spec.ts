@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TelemetryController } from './telemetry.controller';
 
-describe('Telemetry Controller', () => {
+describe('TelemetryDTO Controller', () => {
   let controller: TelemetryController;
 
   beforeEach(async () => {

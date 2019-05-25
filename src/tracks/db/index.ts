@@ -1,1 +1,1 @@
-export * from './telemetry.model'
+export * from './telemetry'
