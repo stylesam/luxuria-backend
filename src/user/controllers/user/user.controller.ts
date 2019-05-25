@@ -4,7 +4,7 @@ import { Response } from 'express'
 import { of } from 'rxjs'
 import { catchError, map, tap } from 'rxjs/operators'
 
-import { User } from '../../models/user'
+import { UserDTO } from '../../models/user'
 import { UserService } from '../../services/user/user.service'
 import { isEmpty } from '../../../shared/util'
 
@@ -20,9 +20,9 @@ export class UserController {
   @ApiOperation({ title: 'Создать пользователя' })
   @ApiBearerAuth()
   @Post()
-  public async create(@Body() userDTO: User, @Res() response: Response) {
+  public async create(@Body() userDTO: UserDTO, @Res() response: Response) {
     return this.userService.create(userDTO).pipe(
-      tap((user: User) => response.status(HttpStatus.CREATED).json(user)),
+      tap((user: UserDTO) => response.status(HttpStatus.CREATED).json(user)),
       catchError((error) => of(error).pipe(
         tap(error => response.status(HttpStatus.CONFLICT).json(error))
       ))
@@ -45,7 +45,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   public getOne(@Param('id') id: string, @Res() response: Response) {
     return this.userService.getOneById(id).pipe(
-      tap((user: User) => response.json(user)),
+      tap((user: UserDTO) => response.json(user)),
       catchError((error) => of(error).pipe(
         tap(error => response.status(HttpStatus.CONFLICT).json(error))
       ))
@@ -60,7 +60,7 @@ export class UserController {
                 @Body() userDTO: Dictionary<any>,
                 @Res() response: Response) {
     return this.userService.updateById(id, userDTO).pipe(
-      tap((user: User) => response.json(user)),
+      tap((user: UserDTO) => response.json(user)),
       catchError((error) => of(error).pipe(
         tap(error => response.status(HttpStatus.CONFLICT).json(error))
       ))
@@ -75,9 +75,9 @@ export class UserController {
     return this.userService.deleteById(id).pipe(
       map((data) => {
         if (!isEmpty(data)) {
-          response.json({ statusCode: 200, success: true, message: 'User has been deleted' })
+          response.json({ statusCode: 200, success: true, message: 'UserDTO has been deleted' })
         } else {
-          throw new HttpException('User with that ID does not exist', HttpStatus.BAD_REQUEST)
+          throw new HttpException('UserDTO with that ID does not exist', HttpStatus.BAD_REQUEST)
         }
       })
     )
@@ -111,9 +111,9 @@ export class UserController {
     return this.userService.deleteUserFromFriendList(id, candidateFriendId).pipe(
       map((data) => {
         if (!isEmpty(data)) {
-          response.json({ statusCode: 200, success: true, message: 'User has been deleted' })
+          response.json({ statusCode: 200, success: true, message: 'UserDTO has been deleted' })
         } else {
-          throw new BadRequestException('User with that ID does not exist')
+          throw new BadRequestException('UserDTO with that ID does not exist')
         }
       })
     )

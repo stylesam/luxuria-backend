@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/commo
 import { ApiUseTags } from '@nestjs/swagger'
 import { of } from 'rxjs'
 
-import { Telemetry, TimeInterval } from '../../models'
+import { TelemetryDTO, TimeInterval } from '../../models'
 import { TelemetryService } from '../../services/telemetry/telemetry.service'
 
 @ApiUseTags('tracks-controller')
@@ -13,8 +13,8 @@ export class TelemetryController {
   }
 
   @Post()
-  public create(@Body() telemetry: Telemetry) {
-    return this.telemetryService.createTelemetry(telemetry)
+  public create(@Body() telemetry: TelemetryDTO) {
+    return this.telemetryService.createTelemetryPost(telemetry)
   }
 
   @Get(':id')
@@ -26,5 +26,4 @@ export class TelemetryController {
   public delete(@Param('id') userId: string, @Query() query: TimeInterval) {
     return of('This method are not supported')
   }
-
 }

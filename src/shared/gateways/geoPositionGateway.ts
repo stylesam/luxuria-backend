@@ -4,7 +4,6 @@ import { Logger } from '@nestjs/common'
 import { Subject } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 
-import { Telemetry } from '../../tracks/models'
 import { TelemetryService } from '../../tracks/services/telemetry/telemetry.service'
 
 @WebSocketGateway(8801)
@@ -15,8 +14,8 @@ export class GeoPositionGateway implements OnGatewayConnection, OnGatewayDisconn
   @WebSocketServer() public server: Server
 
   @SubscribeMessage('telemetries')
-  public handleMessage(client: Client, telemetry: Telemetry) {
-    this.telemetryService.createTelemetry(telemetry).pipe(
+  public handleMessage(client: Client, telemetry: any) {
+    this.telemetryService.pushTelemetryItem(telemetry.userId, telemetry.content).pipe(
       takeUntil(this.destroy$)
     ).subscribe()
   }

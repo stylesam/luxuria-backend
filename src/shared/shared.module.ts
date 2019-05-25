@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common'
 import { GeoPositionGateway } from './gateways/geoPositionGateway'
 import { TelemetryService } from '../tracks/services/telemetry/telemetry.service'
 import { TypegooseModule } from 'nestjs-typegoose'
-import { TelemetryModel } from '../tracks/db'
+import { Telemetry } from '../tracks/db'
 
 @Module({
   providers: [ TelemetryService, GeoPositionGateway ],
-  imports: [ TypegooseModule.forFeature(TelemetryModel) ]
+  imports: [ TypegooseModule.forFeature(Telemetry) ]
 })
 export class SharedModule {}

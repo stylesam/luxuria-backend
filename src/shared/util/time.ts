@@ -6,7 +6,7 @@ export function getCurrentISOTime() {
 }
 
 export function getCurrentTime() {
-  return dayjs().second()
+  return dayjs().unix()
 }
 
 export function dayjsFactory(value) {
