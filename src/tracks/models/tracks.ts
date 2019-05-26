@@ -23,7 +23,15 @@ export interface TimeInterval {
   to: number
 }
 
-export interface State {
+export interface RawTelemetryItem extends TelemetryDTOItem {
+  userId: string
+}
+
+export interface RawState {
   userId: ObjectId,
   state: TelemetryDTOItem
+}
+
+export interface State extends TelemetryDTOItem {
+  userId: ObjectId
 }

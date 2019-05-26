@@ -5,7 +5,7 @@ import { from, of, iif, Observable } from 'rxjs'
 import { map, switchMap, tap, toArray } from 'rxjs/operators'
 
 import { Telemetry } from '../../db'
-import { State, TelemetryDTO, TelemetryDTOItem } from '../../models'
+import { RawState, RawTelemetryItem, State, TelemetryDTO, TelemetryDTOItem } from '../../models'
 import { getCurrentTime } from '../../../shared/util'
 import { ObjectId } from 'bson'
 
@@ -21,7 +21,7 @@ export class TelemetryService {
     )
   }
 
-  public pushTelemetryItem(userId: string, telemetryItem: TelemetryDTOItem) {
+  public pushTelemetryItem({ userId, ...telemetryItem }: RawTelemetryItem) {
     const saveNewTelemetryItem$ = from(this.telemetryModel.findOneAndUpdate({ userId }, {
       $push: { content: telemetryItem },
       $min: { firstTelemetryFixTime: telemetryItem.clientFixTime },
@@ -73,7 +73,7 @@ export class TelemetryService {
     )
   }
 
-  public getAllLastTelemetries() {
+  public getAllLastTelemetries(): Observable<State[]> {
     return from(this.telemetryModel.aggregate([
       { $project: {
         _id: 0,
@@ -81,8 +81,8 @@ export class TelemetryService {
         state: { $arrayElemAt: [ '$content', -1 ] }
       } }
     ])).pipe(
-      switchMap((states: State[]) => from(states).pipe(
-        map((state: State) => ({ userId: state.userId, ...state.state }))
+      switchMap((states: RawState[]) => from(states).pipe(
+        map((state: RawState) => ({ userId: state.userId, ...state.state }))
       )),
       toArray()
     )
