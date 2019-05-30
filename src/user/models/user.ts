@@ -1,5 +1,11 @@
 import { ApiModelProperty } from '@nestjs/swagger'
 
+export enum UserRole {
+  admin = 'ADMIN',
+  superUser = 'SUPER_USER',
+  user = 'USER'
+}
+
 export class Social {
 
   @ApiModelProperty({
@@ -14,7 +20,6 @@ export class Social {
   })
   url: string
 }
-
 
 export class UserDTO {
 
@@ -35,7 +40,7 @@ export class UserDTO {
     description: 'Пароль',
     required: true
   })
-  password: string
+  password?: string
 
   @ApiModelProperty({
     description: 'Имя',
@@ -67,21 +72,24 @@ export class UserDTO {
     isArray: true,
     default: []
   })
-  friends: string[]
+  friends?: string[]
 
   @ApiModelProperty({
-    description: 'Время создания',
-    example: '2019-05-09T11:53:45.147Z',
-    format: 'ISO_8601'
+    description: 'Время создания'
   })
   createdAt: string
 
   @ApiModelProperty({
-    description: 'Время обновления',
-    example: '2019-05-09T11:53:45.147Z',
-    format: 'ISO_8601'
+    description: 'Время обновления'
   })
   updatedAt: string
 
-  __v: number
+  @ApiModelProperty({
+    description: 'Пользовательская роль',
+    example: 'USER',
+    enum: [ UserRole.admin, UserRole.superUser, UserRole.user ]
+  })
+  role: UserRole
+
+  __v?: number
 }

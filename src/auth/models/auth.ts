@@ -1,26 +1,12 @@
-import { Role } from '../../shared/database/db-models/author'
-import { ApiModelProperty } from '@nestjs/swagger'
+import { UserRole } from '../../user/models/user'
 
-export class JwtPayloadDTO {
-  
-  @ApiModelProperty({
-    description: 'Никнейм автора',
-    required: true,
-    example: 'stylesam'
-  })
-  nick: string
-  
-  @ApiModelProperty({
-    description: 'Роль автора',
-    required: true,
-    example: 'admin',
-    enum: [ Role.Admin, Role.Author ]
-  })
-  role: Role
-
-  @ApiModelProperty({
-    description: 'Пароль автора',
-    required: true
-  })
+export class AuthDTO {
+  login: string
   password: string
+}
+
+export interface JwtPayload {
+  role: UserRole,
+  userId: string,
+  exp: number
 }

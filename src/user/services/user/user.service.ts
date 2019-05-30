@@ -2,8 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from 'nestjs-typegoose'
 import { ModelType } from 'typegoose'
 import { Document } from 'mongoose'
-import { hashSync } from 'bcrypt'
-import { of, from } from 'rxjs'
+import { compare, hashSync } from 'bcrypt'
+import { of, from, Observable } from 'rxjs'
 import { map, switchMap, toArray, pluck } from 'rxjs/operators'
 
 import { User } from '../../db/user'
@@ -29,6 +29,12 @@ export class UserService {
 
   public getOneById(id: string) {
     return from(this.userModel.findById(id).lean()).pipe(
+      map((user: UserDTO) => this.filterUserData(user))
+    )
+  }
+
+  public getOneByLogin(login: string): Observable<UserDTO> {
+    return from(this.userModel.findOne({ login }).lean()).pipe(
       map((user: UserDTO) => this.filterUserData(user))
     )
   }
@@ -103,16 +109,20 @@ export class UserService {
     )
   }
 
+  public isExistUser(id: string) {
+    return from(this.userModel.countDocuments({ _id: id })).pipe(
+      map((count: number) =>  count > 0)
+    )
+  }
+
+  public comparePasswords(user: UserDTO, password: string) {
+    return compare(password, user.password)
+  }
+
   private filterUserData(user: UserDTO) {
     const { password, friends, __v, ...filteredUser } = user
 
     return filteredUser
-  }
-
-  private isExistUser(id: string) {
-    return from(this.userModel.countDocuments({ _id: id })).pipe(
-      map((count: number) =>  count > 0)
-    )
   }
 
   private isUserExistInFriendList(candidateId: ObjectId | string, friendList: ObjectId[]) {

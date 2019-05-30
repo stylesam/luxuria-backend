@@ -1,6 +1,7 @@
 import { arrayProp, prop, Ref, Typegoose } from 'typegoose'
 import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsUrl } from 'class-validator'
 import { getCurrentTime } from '../../shared/util'
+import { UserRole } from '../models/user'
 
 export class Social {
 
@@ -19,18 +20,10 @@ export class User extends Typegoose {
   @prop({ required: true })
   password: string
 
-  @IsNotEmpty()
-  @prop({
-    required: true
-    /*validate: (value: string) => {
-      debugger
-      return !isEmptyAll(value)
-    }*/
-  })
+  @prop({ required: true })
   name: string
 
   @prop({ required: true, unique: true })
-  @IsPhoneNumber('RU')
   phone: string
 
   @prop({ default: '' })
@@ -56,4 +49,7 @@ export class User extends Typegoose {
   get fullName() {
     return `${this.name} ${this.lastName}`
   }
+
+  @prop({ enum: UserRole })
+  role: UserRole
 }

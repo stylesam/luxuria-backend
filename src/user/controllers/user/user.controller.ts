@@ -1,4 +1,19 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Res, Param, Query, HttpException, BadRequestException } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Post,
+  Res,
+  Param,
+  Query,
+  HttpException,
+  BadRequestException,
+  UseGuards,
+} from '@nestjs/common'
 import { ApiUseTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { Response } from 'express'
 import { of } from 'rxjs'
@@ -9,6 +24,8 @@ import { UserService } from '../../services/user/user.service'
 import { isEmpty } from '../../../shared/util'
 
 import { Dictionary } from '../../../shared/models'
+import { TokenAuthGuard } from 'src/auth/guards/auth.guard'
+import { AuthGuard } from '@nestjs/passport'
 
 @ApiUseTags('users-controller')
 @Controller('users')
@@ -31,6 +48,7 @@ export class UserController {
 
   @ApiOperation({ title: 'Получить всех пользователей' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @HttpCode(HttpStatus.OK)
   public getAll(@Res() response: Response) {

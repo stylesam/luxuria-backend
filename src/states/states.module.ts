@@ -12,5 +12,5 @@ import { GeoPositionGateway } from '../shared/gateways/geoPositionGateway'
   providers: [ StateScheduler, TelemetryService, GeoPositionGateway ]
 
 })
-export class StateModule {
+export class StatesModule {
 }

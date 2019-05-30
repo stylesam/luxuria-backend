@@ -4,7 +4,7 @@ import { AuthModule } from './auth/auth.module'
 import { UserModule } from './user/user.module'
 import { TracksModule } from './tracks/tracks.module'
 import { SharedModule } from './shared/shared.module'
-import { StateModule } from './state/state.module'
+import { StatesModule } from './states/states.module'
 
 import { env } from '../env'
 
@@ -21,7 +21,7 @@ import { env } from '../env'
     UserModule,
     TracksModule,
     SharedModule,
-    StateModule
+    StatesModule
   ]
 })
 export class AppModule {}
