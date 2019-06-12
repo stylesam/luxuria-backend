@@ -7,6 +7,7 @@ import { SharedModule } from './shared/shared.module'
 import { StatesModule } from './states/states.module'
 
 import { env } from '../env'
+import { PassportModule } from '@nestjs/passport'
 
 @Module({
   imports: [
@@ -21,7 +22,11 @@ import { env } from '../env'
     UserModule,
     TracksModule,
     SharedModule,
-    StatesModule
+    StatesModule,
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+      property: 'requester'
+    })
   ]
 })
 export class AppModule {}

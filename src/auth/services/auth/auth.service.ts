@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { AuthDTO, JwtPayload } from '../../models/auth'
 import { combineLatest, of } from 'rxjs'
 import { switchMap, map } from 'rxjs/operators'
+
+import { AuthDTO, JwtPayload } from '../../models/auth'
+
 import { UserService } from '../../../user/services/user/user.service'
 import { UserDTO } from '../../../user/models/user'
 
@@ -25,7 +27,7 @@ export class AuthService {
 
   public validateUser({ userId, role }: any) {
     return combineLatest([
-      this.userService.isExistUser(userId),
+      this.userService.isExistUser({ _id: userId }),
       this.userService.getOneById(userId).pipe(
         map((user) => user.role === role)
       )

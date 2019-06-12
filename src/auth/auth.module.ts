@@ -10,7 +10,6 @@ import { JwtStrategy } from './services/auth/jwt.strategy'
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secretOrPrivateKey: 'luxuria',
       signOptions: {
@@ -20,7 +19,6 @@ import { JwtStrategy } from './services/auth/jwt.strategy'
     TypegooseModule.forFeature(User)
   ],
   controllers: [ AuthController ],
-  providers: [ AuthService, UserService, JwtStrategy ],
-  exports: [ PassportModule.register({ defaultStrategy: 'jwt' }) ]
+  providers: [ AuthService, UserService, JwtStrategy ]
 })
 export class AuthModule {}

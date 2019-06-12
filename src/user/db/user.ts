@@ -50,6 +50,6 @@ export class User extends Typegoose {
     return `${this.name} ${this.lastName}`
   }
 
-  @prop({ enum: UserRole })
+  @prop({ enum: UserRole, default: UserRole.user })
   role: UserRole
 }
