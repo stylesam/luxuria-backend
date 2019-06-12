@@ -2,14 +2,16 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from 'nestjs-typegoose'
 import { ModelType } from 'typegoose'
 import { Document } from 'mongoose'
-import { hashSync } from 'bcrypt'
-import { of, from } from 'rxjs'
-import { map, switchMap, toArray, pluck } from 'rxjs/operators'
+import { compare, hashSync } from 'bcrypt'
+import { from, Observable, of } from 'rxjs'
+import { catchError, map, pluck, switchMap, tap, toArray } from 'rxjs/operators'
 
 import { User } from '../../db/user'
-import { UserDTO } from '../../models/user'
+import { CanCommand, UserDTO, UserRole, UserRolePriority } from '../../models/user'
 import { ObjectId } from 'bson'
-import { getCurrentTime } from '../../../shared/util'
+import { MongoError } from 'mongodb'
+import { getCurrentTime, isString } from '../../../shared/util'
+import { JwtPayload } from '../../../auth/models/auth'
 
 @Injectable()
 export class UserService {
@@ -23,7 +25,8 @@ export class UserService {
       switchMap((user) => from(user.save()).pipe(
         map((userDoc: Document) => userDoc.toObject()),
         map((user: UserDTO) => this.filterUserData(user))
-      ))
+      )),
+      catchError((error: MongoError) => of(error))
     )
   }
 
@@ -33,8 +36,14 @@ export class UserService {
     )
   }
 
+  public getOneByLogin(login: string): Observable<UserDTO> {
+    return from(this.userModel.findOne({ login }).lean()).pipe(
+      map((user: UserDTO) => this.filterUserData(user))
+    )
+  }
+
   public getAll() {
-    return from(this.userModel.find().lean()).pipe(
+    return from(this.userModel.find().select('-password -friends').lean()).pipe(
       switchMap(users => from(users).pipe(
         map((user: UserDTO) => this.filterUserData(user))
       )),
@@ -46,23 +55,24 @@ export class UserService {
     return from(this.userModel.findByIdAndDelete(id))
   }
 
-  public updateById(id: string, data: object) {
+  public updateById(id: string, data: UserDTO) {
     return from(this.userModel.findByIdAndUpdate(id, { $set: { ...data, updatedAt: getCurrentTime() } }, { new: true }).lean()).pipe(
       map((user: UserDTO) => this.filterUserData(user))
     )
   }
 
   public getAllFriends(id: string) {
-    return from(this.userModel.findById(id).populate('friends').lean()).pipe(
-      pluck('friends')
-    )
+    return from(this.userModel.findById(id)
+                    .populate('friends')
+                    .select('friends')
+                    .lean())
   }
 
   public addUserToFriendList(id: string, candidateId: string) {
     return from(this.userModel.findById(id)).pipe(
       map((data: Document) => data.toObject({ versionKey: false })),
       pluck('friends'),
-      switchMap((friends: ObjectId[]) => this.isExistUser(candidateId).pipe(
+      switchMap((friends: ObjectId[]) => this.isExistUser({ _id: candidateId }).pipe(
         map((isUserExist: boolean) => {
           if (!isUserExist) throw new BadRequestException('UserDTO with that ID does not exist')
           return friends
@@ -86,7 +96,7 @@ export class UserService {
     return from(this.userModel.findById(id)).pipe(
       map((data: Document) => data.toObject({ versionKey: false })),
       pluck('friends'),
-      switchMap((friends: ObjectId[]) => this.isExistUser(candidateId).pipe(
+      switchMap((friends: ObjectId[]) => this.isExistUser({ _id: candidateId }).pipe(
         map((isUserExist: boolean) => {
           if (!isUserExist) throw new BadRequestException('UserDTO with that ID does not exist')
           return friends
@@ -103,19 +113,52 @@ export class UserService {
     )
   }
 
+  public isExistUser(criteria: any) {
+    return from(this.userModel.countDocuments(criteria)).pipe(
+      map((count: number) =>  count > 0)
+    )
+  }
+
+  public isRoleMatch(userId: string, role: UserRole) {
+    return from(this.userModel.findById(userId).select('role')).pipe(
+      tap(data => {debugger})
+    )
+  }
+
+  public comparePasswords(user: UserDTO, password: string) {
+    return compare(password, user.password)
+  }
+
+  public can(command: CanCommand, requester: JwtPayload | UserDTO, user?: UserDTO) {
+    if (command === CanCommand.update) {
+      return requester.role === UserRole.admin
+    }
+
+    if (command === CanCommand.delete) {
+      const reqRole = getRolePriority(requester.role)
+      const delRole = getRolePriority(user.role)
+
+      return reqRole > delRole
+    }
+  }
+
   private filterUserData(user: UserDTO) {
     const { password, friends, __v, ...filteredUser } = user
 
     return filteredUser
   }
 
-  private isExistUser(id: string) {
-    return from(this.userModel.countDocuments({ _id: id })).pipe(
-      map((count: number) =>  count > 0)
-    )
-  }
-
   private isUserExistInFriendList(candidateId: ObjectId | string, friendList: ObjectId[]) {
     return of(friendList.some((friendId) => friendId.equals(candidateId)))
+  }
+}
+
+function getRolePriority(payload: UserDTO | UserRole) {
+  if (payload instanceof UserDTO) {
+    return UserRolePriority[ payload.role ]
+  }
+
+  if (isString(payload)) {
+    return UserRolePriority[ payload ]
   }
 }

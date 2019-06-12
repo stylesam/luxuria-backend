@@ -1,90 +1,95 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Res, Param, Query, HttpException, BadRequestException } from '@nestjs/common'
-import { ApiUseTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { Response } from 'express'
-import { of } from 'rxjs'
-import { catchError, map, tap } from 'rxjs/operators'
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiUseTags } from '@nestjs/swagger'
+import { map, switchMap } from 'rxjs/operators'
 
-import { UserDTO } from '../../models/user'
+import { CanCommand, UserDTO } from '../../models/user'
 import { UserService } from '../../services/user/user.service'
-import { isEmpty } from '../../../shared/util'
-
-import { Dictionary } from '../../../shared/models'
+import { isEmpty, Requester } from '../../../shared/util'
+import { AuthGuard } from '@nestjs/passport'
+import { JwtPayload } from '../../../auth/models/auth'
+import { filter } from 'rxjs/internal/operators/filter'
+import { iif, throwError } from 'rxjs'
 
 @ApiUseTags('users-controller')
 @Controller('users')
 export class UserController {
   public constructor(private userService: UserService) {
-
   }
 
   @ApiOperation({ title: 'Создать пользователя' })
   @ApiBearerAuth()
   @Post()
-  public async create(@Body() userDTO: UserDTO, @Res() response: Response) {
-    return this.userService.create(userDTO).pipe(
-      tap((user: UserDTO) => response.status(HttpStatus.CREATED).json(user)),
-      catchError((error) => of(error).pipe(
-        tap(error => response.status(HttpStatus.CONFLICT).json(error))
-      ))
-    )
+  public create(@Body() userDTO: UserDTO) {
+    return this.userService.create(userDTO)
   }
 
   @ApiOperation({ title: 'Получить всех пользователей' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @HttpCode(HttpStatus.OK)
-  public getAll(@Res() response: Response) {
-    return this.userService.getAll().pipe(
-      tap((users) => response.json(users))
-    )
+  public getAll() {
+    return this.userService.getAll()
   }
 
   @ApiOperation({ title: 'Получить пользователя по ID' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  public getOne(@Param('id') id: string, @Res() response: Response) {
-    return this.userService.getOneById(id).pipe(
-      tap((user: UserDTO) => response.json(user)),
-      catchError((error) => of(error).pipe(
-        tap(error => response.status(HttpStatus.CONFLICT).json(error))
-      ))
-    )
+  public getOne(@Param('id') id: string) {
+    return this.userService.getOneById(id)
   }
 
   @ApiOperation({ title: 'Обновить пользователя' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  public update(@Param('id') id: string,
-                @Body() userDTO: Dictionary<any>,
-                @Res() response: Response) {
-    return this.userService.updateById(id, userDTO).pipe(
-      tap((user: UserDTO) => response.json(user)),
-      catchError((error) => of(error).pipe(
-        tap(error => response.status(HttpStatus.CONFLICT).json(error))
-      ))
+  public update(@Requester() requester: JwtPayload, @Param('id') id: string, @Body() userDTO: UserDTO) {
+    const checkRoleAndUpdate$ = this.userService.getOneById(id).pipe(
+      filter(() => {
+        if (isEmpty(userDTO.role)) throw new BadRequestException('You are not allowed to update anything other than the role')
+        return true
+      }),
+      filter(() => {
+        if (!this.userService.can(CanCommand.update, requester)) {
+          throw new BadRequestException('You are not allowed to update role for that user')
+        }
+
+        return true
+      }),
+      switchMap(() => this.userService.updateById(id, userDTO))
+    )
+
+    return iif(() => requester.userId === id && !isEmpty(userDTO.role),
+      throwError(new BadRequestException('You can not update your role')),
+      iif(() => requester.userId === id, this.userService.updateById(id, userDTO), checkRoleAndUpdate$)
     )
   }
 
   @ApiOperation({ title: 'Удалить пользователя' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  public delete(@Param('id') id: string, @Res() response: Response) {
-    return this.userService.deleteById(id).pipe(
-      map((data) => {
-        if (!isEmpty(data)) {
-          response.json({ statusCode: 200, success: true, message: 'UserDTO has been deleted' })
-        } else {
-          throw new HttpException('UserDTO with that ID does not exist', HttpStatus.BAD_REQUEST)
+  public delete(@Param('id') id: string, @Requester() requester: JwtPayload) {
+    return this.userService.getOneById(id).pipe(
+      filter((updateabler: UserDTO) => {
+        if (!this.userService.can(CanCommand.delete, requester, updateabler)) {
+          throw new BadRequestException('You are not allowed to delete that user')
         }
-      })
+
+        return true
+      }),
+      switchMap(() => this.userService.deleteById(id))
     )
+
   }
 
   @ApiOperation({ title: 'Получить список друзей пользователя по ID' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id/friends')
   @HttpCode(HttpStatus.OK)
   public getFriends(@Param('id') id: string) {
@@ -93,6 +98,7 @@ export class UserController {
 
   @ApiOperation({ title: 'Добавить друга в список друзей' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id/friends')
   @HttpCode(HttpStatus.OK)
   public addFriend(@Param('id') id: string, @Query('candidateFriendId') candidateFriendId: string) {
@@ -103,18 +109,19 @@ export class UserController {
 
   @ApiOperation({ title: 'Удалить друга из списока друзей' })
   @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id/friends')
   @HttpCode(HttpStatus.OK)
-  public deleteFriend(@Param('id') id: string, @Query('candidateFriendId') candidateFriendId: string, @Res() response: Response) {
+  public deleteFriend(@Param('id') id: string, @Query('candidateFriendId') candidateFriendId: string) {
     if (id === candidateFriendId) throw new BadRequestException('Ids can not match')
 
     return this.userService.deleteUserFromFriendList(id, candidateFriendId).pipe(
       map((data) => {
         if (!isEmpty(data)) {
-          response.json({ statusCode: 200, success: true, message: 'UserDTO has been deleted' })
-        } else {
-          throw new BadRequestException('UserDTO with that ID does not exist')
+          return { statusCode: 200, success: true, message: 'UserDTO has been deleted' }
         }
+
+        throw new BadRequestException('UserDTO with that ID does not exist')
       })
     )
   }

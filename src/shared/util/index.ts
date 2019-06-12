@@ -1,3 +1,5 @@
 export * from './data'
 export * from './rxjs'
 export * from './time'
+export * from './error'
+export * from './decorators'

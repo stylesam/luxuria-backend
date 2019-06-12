@@ -1,4 +1,22 @@
 import { ApiModelProperty } from '@nestjs/swagger'
+import { ObjectId } from 'bson'
+
+export enum UserRole {
+  admin = 'ADMIN',
+  superUser = 'SUPER_USER',
+  user = 'USER'
+}
+
+export enum UserRolePriority {
+  USER = 1,
+  SUPER_USER = 2,
+  ADMIN = 3
+}
+
+export enum CanCommand {
+  update = 'UPDATE',
+  delete = 'DELETE'
+}
 
 export class Social {
 
@@ -15,73 +33,75 @@ export class Social {
   url: string
 }
 
-
 export class UserDTO {
 
   @ApiModelProperty({
     description: 'ID',
     example: '5cd433c27446e41be07c6ffa'
   })
-  _id: string
+  _id?: string | ObjectId
 
   @ApiModelProperty({
     description: 'Логин',
     example: 'stylesam',
     required: true
   })
-  login: string
+  login?: string
 
   @ApiModelProperty({
     description: 'Пароль',
     required: true
   })
-  password: string
+  password?: string
 
   @ApiModelProperty({
     description: 'Имя',
     example: 'Сэм',
     required: true
   })
-  name: string
+  name?: string
 
   @ApiModelProperty({
     description: 'Фамилия',
     example: 'Булатов'
   })
-  lastName: string
+  lastName?: string
 
   @ApiModelProperty({
     description: 'Email',
     example: 'stylesam@yandex.ru'
   })
-  email: string
+  email?: string
 
   @ApiModelProperty({
     description: 'Ссылки на соц. сети',
     isArray: true
   })
-  socials: Social[]
+  socials?: Social[]
 
   @ApiModelProperty({
     description: 'Список друзей',
     isArray: true,
     default: []
   })
-  friends: string[]
+  friends?: (string | ObjectId)[]
 
   @ApiModelProperty({
-    description: 'Время создания',
-    example: '2019-05-09T11:53:45.147Z',
-    format: 'ISO_8601'
+    description: 'Время создания'
   })
-  createdAt: string
+  createdAt?: string
 
   @ApiModelProperty({
-    description: 'Время обновления',
-    example: '2019-05-09T11:53:45.147Z',
-    format: 'ISO_8601'
+    description: 'Время обновления'
   })
-  updatedAt: string
+  updatedAt?: string
 
-  __v: number
+  @ApiModelProperty({
+    description: 'Пользовательская роль',
+    example: 'USER',
+    enum: [ UserRole.admin, UserRole.superUser, UserRole.user ]
+  })
+  role?: UserRole
+
+  __v?: number
 }
