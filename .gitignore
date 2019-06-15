@@ -189,6 +189,7 @@ modules.xml
 .idea/sonarlint
 
 dbdata/
+dist/
 
 # End of https://www.gitignore.io/api/web,node,webstorm+all
 

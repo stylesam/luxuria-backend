@@ -1,7 +1,8 @@
 import { arrayProp, prop, Ref, Typegoose } from 'typegoose'
-import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsUrl } from 'class-validator'
+import { IsEmail, IsString, IsUrl } from 'class-validator'
 import { getCurrentTime } from '../../shared/util'
 import { UserRole } from '../models/user'
+import { Coordinate } from 'src/shared/models'
 
 export class Social {
 
@@ -10,6 +11,27 @@ export class Social {
 
   @IsUrl()
   url: string
+}
+
+export class GeoZoneModel {
+
+  @prop({ unique: true })
+  id: number
+
+  @prop({ required: true })
+  name: string
+
+  @prop({ required: true })
+  color: string
+
+  @prop({ default: 0 })
+  area?: number
+
+  @prop({ default: 0 })
+  perimeter?: number
+
+  @prop({ required: true })
+  coordinates: Coordinate[]
 }
 
 export class User extends Typegoose {
@@ -52,4 +74,7 @@ export class User extends Typegoose {
 
   @prop({ enum: UserRole, default: UserRole.user })
   role: UserRole
+
+  @arrayProp({ items: GeoZoneModel })
+  zones: GeoZoneModel[]
 }
