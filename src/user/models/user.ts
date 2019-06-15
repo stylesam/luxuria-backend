@@ -1,5 +1,6 @@
 import { ApiModelProperty } from '@nestjs/swagger'
 import { ObjectId } from 'bson'
+import { Coordinate } from '../../shared/models'
 
 export enum UserRole {
   admin = 'ADMIN',
@@ -31,6 +32,15 @@ export class Social {
     example: 'https://vk.com/stylesams'
   })
   url: string
+}
+
+export class GeoZone {
+  _id?: ObjectId | string
+  name?: string
+  color?: string
+  coordinates?: Coordinate[]
+  area?: number
+  perimeter?: number
 }
 
 export class UserDTO {

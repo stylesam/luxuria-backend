@@ -4,10 +4,10 @@ import { ModelType } from 'typegoose'
 import { Document } from 'mongoose'
 import { compare, hashSync } from 'bcrypt'
 import { from, Observable, of } from 'rxjs'
-import { catchError, map, pluck, switchMap, tap, toArray } from 'rxjs/operators'
+import { catchError, map, pluck, switchMap, toArray, filter } from 'rxjs/operators'
 
 import { User } from '../../db/user'
-import { CanCommand, UserDTO, UserRole, UserRolePriority } from '../../models/user'
+import { CanCommand, GeoZone, UserDTO, UserRole, UserRolePriority } from '../../models/user'
 import { ObjectId } from 'bson'
 import { MongoError } from 'mongodb'
 import { getCurrentTime, isString } from '../../../shared/util'
@@ -120,9 +120,44 @@ export class UserService {
   }
 
   public isRoleMatch(userId: string, role: UserRole) {
-    return from(this.userModel.findById(userId).select('role')).pipe(
-      tap(data => {debugger})
+    return from(this.userModel.findById(userId).select('role'))
+  }
+
+  public createGeoZone(userId: string, zone: GeoZone): Observable<GeoZone> {
+    return of(zone).pipe(
+      map((zone) => ({ _id: new ObjectId(), ...zone })),
+      switchMap((zone: GeoZone) => from(this.userModel.findOneAndUpdate(
+        { _id: userId },
+        { $push: { zones: zone } },
+        { new: true }
+      ).lean()).pipe(
+        map(() => zone)
+      ))
     )
+  }
+
+
+  public getAllZones(userId: string) {
+    return from(this.userModel.findById(userId).select('zones').lean()).pipe(
+      map((zones) => zones.zones)
+    )
+  }
+
+  public getZoneById(userId: string, zoneId: string) {
+    return from(this.userModel.findById(userId).select('zones').lean()).pipe(
+      map(data => data.zones),
+      switchMap((zones: GeoZone[]) => from(zones).pipe(
+        filter((zone) => new ObjectId(zoneId).equals(zone._id))
+      ))
+    )
+  }
+
+  public updateZoneById(userId: string, zoneId: string, zone: GeoZone) {
+    return from(this.userModel.findOneAndUpdate(
+        { _id: userId, 'zones._id': zoneId },
+        { $set: { 'zones.$': zone } },
+        { new: true }
+      ))
   }
 
   public comparePasswords(user: UserDTO, password: string) {
