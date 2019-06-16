@@ -19,8 +19,8 @@ export class UserController {
   @ApiOperation({ title: 'Создать пользователя' })
   @ApiBearerAuth()
   @Post()
-  private create(@Body() userDTO: UserDTO) {
-    return this.userService.create(userDTO)
+  private create(@Body() user: UserDTO) {
+    return this.userService.create(user)
   }
 
   @ApiOperation({ title: 'Получить всех пользователей' })
