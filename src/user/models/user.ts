@@ -35,13 +35,46 @@ export class Social {
 }
 
 export class GeoZone {
+  @ApiModelProperty({
+    description: 'ID',
+    example: '5cd433c27446e41be07c6ffa'
+  })
   _id?: ObjectId | string
+
+  @ApiModelProperty({
+    description: 'Имя зоны',
+    example: 'Драма'
+  })
   name?: string
+
+  @ApiModelProperty({
+    description: 'Цвет зоны',
+    example: 'RED'
+  })
   color?: string
+
+  @ApiModelProperty({
+    description: 'Координаты',
+    example: [
+      { lat: 0, lng: 0 }
+    ]
+  })
   coordinates?: Coordinate[]
+
+  @ApiModelProperty({
+    description: 'Площадь в кв. м',
+    example: 10
+  })
   area?: number
+
+  @ApiModelProperty({
+    description: 'Периметр в м.',
+    example: 2
+  })
   perimeter?: number
+
 }
+
 
 export class UserDTO {
 

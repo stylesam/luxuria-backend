@@ -7,10 +7,10 @@ import { from, Observable, of } from 'rxjs'
 import { catchError, map, pluck, switchMap, toArray, filter } from 'rxjs/operators'
 
 import { User } from '../../db/user'
-import { CanCommand, GeoZone, UserDTO, UserRole, UserRolePriority } from '../../models/user'
+import { CanCommand, GeoZone, UserDTO, UserRole } from '../../models/user'
 import { ObjectId } from 'bson'
 import { MongoError } from 'mongodb'
-import { getCurrentTime, isString } from '../../../shared/util'
+import { getCurrentTime, getRolePriority } from '../../../shared/util'
 import { JwtPayload } from '../../../auth/models/auth'
 
 @Injectable()
@@ -185,15 +185,5 @@ export class UserService {
 
   private isUserExistInFriendList(candidateId: ObjectId | string, friendList: ObjectId[]) {
     return of(friendList.some((friendId) => friendId.equals(candidateId)))
-  }
-}
-
-function getRolePriority(payload: UserDTO | UserRole) {
-  if (payload instanceof UserDTO) {
-    return UserRolePriority[ payload.role ]
-  }
-
-  if (isString(payload)) {
-    return UserRolePriority[ payload ]
   }
 }

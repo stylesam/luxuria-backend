@@ -1,3 +1,5 @@
+import { UserDTO, UserRole, UserRolePriority } from '../../user/models/user'
+
 export function isObject(obj) {
   return typeof obj === 'object'
 }
@@ -36,4 +38,14 @@ export function isEmptyAll(obj) {
 
 export function isEmptyObject(obj) {
   return !(obj && Object.keys(obj).length > 0)
+}
+
+export function getRolePriority(payload: UserDTO | UserRole) {
+  if (payload instanceof UserDTO) {
+    return UserRolePriority[ payload.role ]
+  }
+
+  if (isString(payload)) {
+    return UserRolePriority[ payload ]
+  }
 }
