@@ -1,14 +1,31 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiUseTags } from '@nestjs/swagger'
 import { map, switchMap } from 'rxjs/operators'
 
-import { CanCommand, GeoZone, UserDTO } from '../../models/user'
+import { CanCommand, GeoZone, UserBackgroundType, UserDTO } from '../../models/user'
 import { UserService } from '../../services/user/user.service'
 import { isEmpty, Requester } from '../../../shared/util'
 import { AuthGuard } from '@nestjs/passport'
 import { JwtPayload } from '../../../auth/models/auth'
 import { filter } from 'rxjs/internal/operators/filter'
-import { iif, throwError } from 'rxjs'
+import { iif, throwError, of } from 'rxjs'
+import { FileFieldsInterceptor } from '@nestjs/platform-express'
 
 @ApiUseTags('users-controller')
 @Controller('users')
@@ -19,8 +36,19 @@ export class UserController {
   @ApiOperation({ title: 'Создать пользователя' })
   @ApiBearerAuth()
   @Post()
-  private create(@Body() user: UserDTO) {
-    return this.userService.create(user)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'background', maxCount: 1 }
+  ]))
+  private create(@Body() user: UserDTO, @UploadedFiles() files) {
+    return of(user).pipe(
+      map((user) => ({
+        ...user,
+        avatar: files.avatar[ 0 ],
+        background: { type: UserBackgroundType.image, value: files.background[ 0 ] }
+      })),
+      switchMap((user) => this.userService.create(user))
+    )
   }
 
   @ApiOperation({ title: 'Получить всех пользователей' })
@@ -131,7 +159,7 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Post(':id/zones')
   private createZone(@Param('id') id: string, @Body() zone: GeoZone) {
-    return this.userService.createGeoZone(id, zone)
+    return this.userService.addGeoZone(id, zone)
   }
 
   @ApiOperation({ title: 'Получить все зоны пользователя' })

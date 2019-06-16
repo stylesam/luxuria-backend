@@ -1,6 +1,7 @@
 import { ApiModelProperty } from '@nestjs/swagger'
 import { ObjectId } from 'bson'
 import { Coordinate } from '../../shared/models'
+import { GeoZoneModel } from '../db/user'
 
 export enum UserRole {
   admin = 'ADMIN',
@@ -17,6 +18,16 @@ export enum UserRolePriority {
 export enum CanCommand {
   update = 'UPDATE',
   delete = 'DELETE'
+}
+
+export enum UserBackgroundType {
+  image = 'IMAGE',
+  color = 'COLOR'
+}
+
+export interface UserBackground {
+  type: UserBackgroundType
+  value: string
 }
 
 export class Social {
@@ -146,5 +157,32 @@ export class UserDTO {
   })
   role?: UserRole
 
+  @ApiModelProperty({
+    description: 'Список геозон'
+  })
+  zones?: GeoZoneModel[]
+
+  @ApiModelProperty({
+    description: 'Путь до аватарки'
+  })
+  avatar?: string | File
+
+  @ApiModelProperty({
+    description: 'Фон'
+  })
+  background?: UserBackground
+
   __v?: number
+}
+
+export interface File {
+  fieldname: string
+  originalname: string
+  encoding: string
+  mimetype: string
+  size: number
+  destination: string
+  filename: string
+  path: string
+  buffer: Buffer
 }

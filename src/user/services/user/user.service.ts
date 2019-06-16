@@ -19,6 +19,7 @@ export class UserService {
   }
 
   public create(user: UserDTO) {
+    debugger
     return of(user).pipe(
       map((user: UserDTO) => ({ ...user, password: hashSync(user.password, 10) })),
       map((user: UserDTO) => new this.userModel(user)),
@@ -123,7 +124,7 @@ export class UserService {
     return from(this.userModel.findById(userId).select('role'))
   }
 
-  public createGeoZone(userId: string, zone: GeoZone): Observable<GeoZone> {
+  public addGeoZone(userId: string, zone: GeoZone): Observable<GeoZone> {
     return of(zone).pipe(
       map((zone) => ({ _id: new ObjectId(), ...zone })),
       switchMap((zone: GeoZone) => from(this.userModel.findOneAndUpdate(
