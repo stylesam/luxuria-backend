@@ -49,3 +49,7 @@ export function getRolePriority(payload: UserDTO | UserRole) {
     return UserRolePriority[ payload ]
   }
 }
+
+export function fileExtension(fileName: string) {
+  return (/[.]/.exec(fileName)) ? /[^.]+$/.exec(fileName) : undefined
+}

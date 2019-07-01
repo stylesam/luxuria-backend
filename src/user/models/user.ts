@@ -27,7 +27,7 @@ export enum UserBackgroundType {
 
 export interface UserBackground {
   type: UserBackgroundType
-  value: string
+  value: string | MulterFile
 }
 
 export class Social {
@@ -165,24 +165,24 @@ export class UserDTO {
   @ApiModelProperty({
     description: 'Путь до аватарки'
   })
-  avatar?: string | File
+  avatar?: string | MulterFile
 
   @ApiModelProperty({
     description: 'Фон'
   })
-  background?: UserBackground
+  background?: UserBackground | string
 
   __v?: number
 }
 
-export interface File {
-  fieldname: string
-  originalname: string
-  encoding: string
-  mimetype: string
-  size: number
-  destination: string
-  filename: string
-  path: string
-  buffer: Buffer
+export interface MulterFile {
+  fieldname?: string
+  originalname?: string
+  encoding?: string
+  mimetype?: string
+  size?: number
+  destination?: string
+  filename?: string
+  path?: string
+  buffer?: Buffer
 }

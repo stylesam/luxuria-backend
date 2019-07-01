@@ -18,14 +18,15 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiUseTags } from '@nestjs/swagger'
 import { map, switchMap } from 'rxjs/operators'
 
-import { CanCommand, GeoZone, UserBackgroundType, UserDTO } from '../../models/user'
+import { CanCommand, GeoZone, MulterFile, UserBackground, UserBackgroundType, UserDTO } from '../../models/user'
 import { UserService } from '../../services/user/user.service'
-import { isEmpty, Requester } from '../../../shared/util'
+import { isEmpty, isString, Requester } from '../../../shared/util'
 import { AuthGuard } from '@nestjs/passport'
 import { JwtPayload } from '../../../auth/models/auth'
 import { filter } from 'rxjs/internal/operators/filter'
 import { iif, throwError, of } from 'rxjs'
 import { FileFieldsInterceptor } from '@nestjs/platform-express'
+import { Dictionary } from '../../../shared/models'
 
 @ApiUseTags('users-controller')
 @Controller('users')
@@ -40,15 +41,24 @@ export class UserController {
     { name: 'avatar', maxCount: 1 },
     { name: 'background', maxCount: 1 }
   ]))
-  private create(@Body() user: UserDTO, @UploadedFiles() files) {
+  private create(@Body() user: UserDTO, @UploadedFiles() files: Dictionary<MulterFile[]>) {
     return of(user).pipe(
       map((user) => ({
         ...user,
         avatar: files.avatar[ 0 ],
-        background: { type: UserBackgroundType.image, value: files.background[ 0 ] }
+        background: (() => {
+          if (!isEmpty(user.background) && isEmpty(files.background) && isString(user.background)) {
+            return <UserBackground>{ type: UserBackgroundType.color, value: user.background }
+          }
+
+          if (!isEmpty(files.background)) {
+            return <UserBackground>{ type: UserBackgroundType.image, value: files.background[ 0 ] }
+          }
+        })()
       })),
       switchMap((user) => this.userService.create(user))
     )
+
   }
 
   @ApiOperation({ title: 'Получить всех пользователей' })
