@@ -1,7 +1,7 @@
 import { arrayProp, prop, Ref, Typegoose } from 'typegoose'
 import { IsEmail, IsString, IsUrl } from 'class-validator'
 import { getCurrentTime } from '../../shared/util'
-import { UserRole } from '../models/user'
+import { UserBackground, UserBackgroundType, UserRole } from '../models/user'
 import { Coordinate } from 'src/shared/models'
 
 export class Social {
@@ -67,14 +67,20 @@ export class User extends Typegoose {
   @prop({ default: getCurrentTime() })
   updatedAt: number
 
-  @prop()
-  get fullName() {
-    return `${this.name} ${this.lastName}`
-  }
-
   @prop({ enum: UserRole, default: UserRole.user })
   role: UserRole
 
   @arrayProp({ items: GeoZoneModel })
   zones: GeoZoneModel[]
+
+  @prop({ required: true, trim: true })
+  avatar: string
+
+  @prop({
+    default: <UserBackground>{
+      type: UserBackgroundType.color,
+      value: '#000'
+    }
+  })
+  background: UserBackground
 }
