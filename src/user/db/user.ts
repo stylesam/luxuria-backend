@@ -45,9 +45,6 @@ export class User extends Typegoose {
   @prop({ required: true })
   name: string
 
-  @prop({ required: true, unique: true })
-  phone: string
-
   @prop({ default: '' })
   lastName: string
 
