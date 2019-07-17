@@ -1,8 +1,8 @@
 <br />
-<p style='text-align: center'>
-  <img src="luxuria.svg" alt="Logo" style='max-width: 200px'>
+<p align='center'>
+  <img align='center' src="luxuria.svg" alt="Logo" width='200'>
 
-  <h1 style='text-align: center; border: none'>Luxuria</h1>
+  <h2 align='center'>Luxuria</h2>
 </p>
 
 
@@ -27,7 +27,7 @@
 
 Luxuria is an application for those who like to move. Track your location and the location of your friends on the map.
 
-### Build with
+### Built with
 * [NestJS](https://nestjs.com/)
 * [MongoDB](https://www.mongodb.com/)
 
@@ -101,9 +101,9 @@ Project Link: [https://github.com/stylesam/luxuria-backend](https://github.com/s
 
 ## Team
 
-| <p style='text-align: center'><a href='https://github.com/stylesam'><img src='https://avatars0.githubusercontent.com/u/17084223?s=460&v=4' style='width: 100px; border-radius: 50%'></a></p> |
+| <p style='text-align: center'><a href='https://github.com/stylesam'><img src='https://avatars0.githubusercontent.com/u/17084223?s=460&v=4' width='100'></a></p> |
 |--|
-| <p style='text-align: center'>Sam Bualtov ![Creator](https://img.shields.io/badge/-Creator-%236441a4.svg) <br> [@stylesam](https://github.com/stylesam) - [@_stylesam](https://twitter.com/_stylesam_)</p> |
+| <p align='center'>Sam Bualtov ![Creator](https://img.shields.io/badge/-Creator-%236441a4.svg) <br> [@stylesam](https://github.com/stylesam) - [@_stylesam](https://twitter.com/_stylesam_)</p> |
 
 <!-- ## Contributors
 
