@@ -11,7 +11,7 @@ export class StateScheduler extends NestSchedule {
   }
 
   @Interval(STATES_UPDATE_INTERVAL * 1000)
-  hello() {
+  public states() {
     this.geoPosition.emitStates()
   }
 }

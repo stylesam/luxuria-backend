@@ -73,18 +73,18 @@ export class TelemetryService {
     )
   }
 
-  public getAllLastTelemetries(): Observable<State[]> {
+  public getAllLastTelemetries(listOfUserIds: string[]): Observable<State[]> {
     return from(this.telemetryModel.aggregate([
-      { $project: {
-        _id: 0,
-        userId: 1,
-        state: { $arrayElemAt: [ '$content', -1 ] }
-      } }
+      {
+        $match: { _id: { $in: listOfUserIds } },
+        $project: {
+          _id: 0,
+          userId: 1,
+          state: { $arrayElemAt: [ '$content', -1 ] }
+        }
+      }
     ])).pipe(
-      switchMap((states: RawState[]) => from(states).pipe(
-        map((state: RawState) => ({ userId: state.userId, ...state.state }))
-      )),
-      toArray()
+      map((states: RawState[]) => states.map((state) => ({ userId: state.userId, ...state.state })))
     )
   }
 

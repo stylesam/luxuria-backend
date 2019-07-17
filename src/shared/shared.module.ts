@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { TypegooseModule } from 'nestjs-typegoose'
+import { JwtModule } from '@nestjs/jwt'
 
 import { GeoPositionGateway } from './gateways/geoPositionGateway'
 
@@ -21,7 +22,13 @@ import { ImageStoreService } from './services/image-store/image-store.service'
   ],
   imports: [
     TypegooseModule.forFeature(Telemetry),
-    SpotModule
+    SpotModule,
+    JwtModule.register({
+      secretOrPrivateKey: 'luxuria',
+      signOptions: {
+        expiresIn: '1d'
+      }
+    }),
   ],
   exports: [
     CompressorService,

@@ -12,6 +12,7 @@ export class ImageStoreService {
   private client: S3
 
   constructor() {
+    // todo LUX-7: Перепписать способ авторизации можно это делать через переменные окружения
     config.credentials = new SharedIniFileCredentials({ profile: 'luxuria' })
     this.client = new S3({
       endpoint: 'https://storage.yandexcloud.net',

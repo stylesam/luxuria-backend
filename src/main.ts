@@ -7,8 +7,13 @@ import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true })
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
+  app.enableCors({
+    origin: [ 'localhost:8081' ],
+    methods: [ 'GET', 'POST', 'OPTIONS', 'DELETE' ],
+    allowedHeaders: [ 'Authorization' ]
+  })
   app.use(morgan('dev'))
   app.useStaticAssets(join(__dirname, '..', 'public'), {
     prefix: '/public/'
