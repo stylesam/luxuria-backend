@@ -2,11 +2,12 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import * as morgan from 'morgan'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { env } from '../env'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
+import { Env } from '../environments/env'
 
 async function bootstrap() {
+  const server = Env.get('server')
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true })
 
   app.use(morgan('dev'))
@@ -15,10 +16,10 @@ async function bootstrap() {
   })
 
   const options = new DocumentBuilder()
-    .setTitle('Acedia Blog API')
-    .setDescription('REST API for my blog')
+    .setTitle('Luxuria API')
+    .setDescription('REST API for Luxuria app')
     .setContactEmail('stylesam@yandex.ru')
-    .setVersion(env.version)
+    .setVersion(Env.get('appVersion'))
     .addBearerAuth()
     .build()
 
@@ -27,9 +28,9 @@ async function bootstrap() {
 
   SwaggerModule.setup(swaggerPath, app, document)
 
-  console.log(`Swagger doc started on http://${env.server.host}:${env.server.port}/${swaggerPath}`)
+  console.log(`Swagger doc started on http://${server.host}:${server.port}/${swaggerPath}`)
 
-  await app.listen(env.server.port)
+  await app.listen(server.port)
 }
 
 bootstrap()
