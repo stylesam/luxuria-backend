@@ -6,13 +6,13 @@ import { TracksModule } from './tracks/tracks.module'
 import { SharedModule } from './shared/shared.module'
 import { StatesModule } from './states/states.module'
 
-import { DATABASE_URL, env } from '../env'
 import { PassportModule } from '@nestjs/passport'
+import { Env } from '../environments/env'
 
 @Module({
   imports: [
     TypegooseModule.forRoot(
-      DATABASE_URL,
+      Env.get('mongoUrl'),
       {
         useNewUrlParser: true,
         useCreateIndex: true,
@@ -29,4 +29,8 @@ import { PassportModule } from '@nestjs/passport'
     })
   ]
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {
+
+  }
+}

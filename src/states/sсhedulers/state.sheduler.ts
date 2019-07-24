@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { NestSchedule, Interval } from 'nest-schedule'
 import { GeoPositionGateway } from '../../shared/gateways/geoPositionGateway'
-import { STATES_UPDATE_INTERVAL } from '../../../env'
+import { STATES_UPDATE_INTERVAL } from '../../shared/constants'
 
 @Injectable()
 export class StateScheduler extends NestSchedule {

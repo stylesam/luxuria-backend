@@ -58,7 +58,6 @@ export class UserController {
       })),
       switchMap((user) => this.userService.create(user))
     )
-
   }
 
   @ApiOperation({ title: 'Получить всех пользователей' })
