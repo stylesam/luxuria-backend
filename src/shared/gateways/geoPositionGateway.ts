@@ -8,12 +8,12 @@ import { JwtService } from '@nestjs/jwt'
 import { TelemetryService } from '../../tracks/services/telemetry/telemetry.service'
 import { RawTelemetryItem, State } from '../../tracks/models'
 import { isEmpty, isEmptyArray } from '../util'
-import { AuthGuard } from '@nestjs/passport'
 
-@WebSocketGateway({
-  origins: '*:*'
+@WebSocketGateway(8081, {
+  path: '/states'
 })
 export class GeoPositionGateway implements OnGatewayConnection, OnGatewayDisconnect {
+
 
   @WebSocketServer()
   public server: Server
@@ -49,6 +49,7 @@ export class GeoPositionGateway implements OnGatewayConnection, OnGatewayDisconn
   }
 
   public handleConnection(client: Client, ...args: any[]) {
+    debugger
     if (!isEmptyArray(this.subsStore)) return
     this.logger.log('Websocket connected')
 

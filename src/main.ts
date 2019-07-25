@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
 import { env } from '../environments/env'
+import { WebsocketAdapter } from './shared/adapters/ws.adapter'
 
 async function bootstrap() {
   const server = env.get('server')
@@ -19,6 +20,7 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'public'), {
     prefix: '/public/'
   })
+  app.useWebSocketAdapter(new WebsocketAdapter(app))
 
   const options = new DocumentBuilder()
     .setTitle('Luxuria API')
