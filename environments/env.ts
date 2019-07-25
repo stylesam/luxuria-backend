@@ -3,61 +3,47 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import * as appPackage from '../package.json'
 
-const config = safeLoadAll(readFileSync(join(__dirname, `${process.env.NODE_ENV}.yaml`), { encoding: 'utf-8', flag: 'r' }))[ 0 ]
-
 export enum NodeEnv {
   development = 'dev',
   production = 'prod'
 }
 
-export interface Environment {
-  server: {
-    port: number
-    host: string
-  }
-
-  database: {
-    name: string
-    port: number
-    host: string
-    login?: string
-    password?: string
-  }
-
-  appVersion: number
-  mongoUrl: string
-}
-
-export class Env {
-  private static nodeEnv = <NodeEnv>process.env.NODE_ENV
-  private static instance: Env
-  private static config: Environment = {
+class Env {
+  private nodeEnv = <NodeEnv>process.env.NODE_ENV
+  private config = {
     appVersion: appPackage.version,
-    mongoUrl: Env.getMongo(),
-    ...config
+    ...this.getYamlConfig()
   }
 
-  private static getMongo() {
-    const database = Env.get('database')
+  public setMongo() {
+    const database = this.get('database')
+    let url
 
-    switch (Env.nodeEnv) {
-      case NodeEnv.development:
-        return `mongodb://${database.host}:${database.port.toString()}/${database.name}`
-      case NodeEnv.production:
-        return `mongodb://${database.login}:${database.password}@${database.host}:${database.port.toString()}/${database.name}`
+    if (this.nodeEnv === NodeEnv.development) {
+      url = `mongodb://${database.host}:${database.port.toString()}/${database.name}`
+    }
+
+    if (this.nodeEnv === NodeEnv.production) {
+      url = `mongodb://${database.login}:${database.password}@${database.host}:${database.port.toString()}/${database.name}`
+    }
+
+    this.config = {
+      ...this.config,
+      mongoUrl: url
     }
   }
 
-  private constructor() {}
-
-  public static getInstance() {
-    if (!Env.instance) {
-      Env.instance = new Env()
-    }
-    return Env.instance
+  private getYamlConfig() {
+    return safeLoadAll(readFileSync(join(__dirname, `${process.env.NODE_ENV}.yaml`), { encoding: 'utf-8', flag: 'r' }))[ 0 ]
   }
 
-  public static get(key: string) {
-    return Env.config[ key ]
+  constructor() {
+  }
+
+  public get(key: string) {
+    return this.config[ key ]
   }
 }
+
+export const env = new Env()
+env.setMongo()

@@ -2,13 +2,12 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import * as morgan from 'morgan'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { env } from '../env'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
-import { Env } from '../environments/env'
+import { env } from '../environments/env'
 
 async function bootstrap() {
-  const server = Env.get('server')
+  const server = env.get('server')
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true })
 
   app.enableCors({
@@ -25,7 +24,7 @@ async function bootstrap() {
     .setTitle('Luxuria API')
     .setDescription('REST API for Luxuria app')
     .setContactEmail('stylesam@yandex.ru')
-    .setVersion(Env.get('appVersion'))
+    .setVersion(env.get('appVersion'))
     .addBearerAuth()
     .build()
 

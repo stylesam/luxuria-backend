@@ -7,12 +7,12 @@ import { SharedModule } from './shared/shared.module'
 import { StatesModule } from './states/states.module'
 
 import { PassportModule } from '@nestjs/passport'
-import { Env } from '../environments/env'
+import { env } from '../environments/env'
 
 @Module({
   imports: [
     TypegooseModule.forRoot(
-      Env.get('mongoUrl'),
+      env.get('mongoUrl'),
       {
         useNewUrlParser: true,
         useCreateIndex: true,
@@ -29,8 +29,4 @@ import { Env } from '../environments/env'
     })
   ]
 })
-export class AppModule {
-  constructor() {
-
-  }
-}
+export class AppModule {}
