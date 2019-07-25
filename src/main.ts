@@ -11,16 +11,14 @@ async function bootstrap() {
   const server = env.get('server')
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true })
 
-  app.enableCors({
+  app
+  .enableCors({
     origin: [ 'localhost:8081' ],
     methods: [ 'GET', 'POST', 'OPTIONS', 'DELETE' ],
     allowedHeaders: [ 'Authorization' ]
   })
-  app.use(morgan('dev'))
-  app.useStaticAssets(join(__dirname, '..', 'public'), {
-    prefix: '/public/'
-  })
-  app.useWebSocketAdapter(new WebsocketAdapter(app))
+  .use(morgan('dev'))
+  .useWebSocketAdapter(new WebsocketAdapter(app))
 
   const options = new DocumentBuilder()
     .setTitle('Luxuria API')

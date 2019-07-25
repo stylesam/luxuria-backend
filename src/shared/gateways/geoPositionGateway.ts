@@ -1,55 +1,54 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
-import { Server, Client } from 'socket.io'
-import { Logger, UseGuards, Post } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common'
 import { defer, Subject, Subscription } from 'rxjs'
-import { filter, pluck, takeUntil, tap, withLatestFrom } from 'rxjs/operators'
-import { JwtService } from '@nestjs/jwt'
+import { filter, pluck, takeUntil, tap } from 'rxjs/operators'
 
 import { TelemetryService } from '../../tracks/services/telemetry/telemetry.service'
 import { RawTelemetryItem, State } from '../../tracks/models'
-import { isEmpty, isEmptyArray } from '../util'
+import { isEmptyArray } from '../util'
+import { SocketEventType } from '../models'
+import { AuthGuard } from '@nestjs/passport'
+import { Server } from 'ws'
 
 @WebSocketGateway(8081, {
   path: '/states'
 })
 export class GeoPositionGateway implements OnGatewayConnection, OnGatewayDisconnect {
-
-
   @WebSocketServer()
   public server: Server
   private destroy$ = new Subject()
-  private logger = new Logger('GeoPositionGateway')
-  private socketEvents = new Subject<Action>()
+  private logger = new Logger(this.constructor.name)
+  private socketEvents$ = new Subject<Action>()
   private subsStore: Subscription[] = []
 
-  private states$ = defer(() => this.socketEvents.pipe(
+  private states$ = defer(() => this.socketEvents$.pipe(
     takeUntil(this.destroy$),
-    filter((action) => action.type === 'states'),
+    filter((action) => action.type === SocketEventType.states)
     // withLatestFrom(this.telemetryService.getAllLastTelemetries()),
 
     /* filter(([ _, states ]: [ Action, State[] ]) => !isEmpty(states) && !isEmptyArray(states)),
     tap(([ _, states ]: [ Action, State[] ]) => this.server.emit('states', states)) */
   ))
 
-  private telemetries$ = defer(() => this.socketEvents.pipe(
+  private telemetries$ = defer(() => this.socketEvents$.pipe(
     takeUntil(this.destroy$),
-    filter((action) => action.type === 'telemetries'),
+    filter((action) => action.type === SocketEventType.telemetries),
     pluck('payload'),
     tap((telemetry: RawTelemetryItem) => this.telemetryService.pushTelemetryItem(telemetry))
   ))
 
-  // @UseGuards(AuthGuard('jwt'))
-  @SubscribeMessage('telemetries')
-  public handleMessage(client: Client, telemetry: RawTelemetryItem) {
-    this.socketEvents.next(new EmitTelemetry(telemetry))
+  @UseGuards(AuthGuard('jwt'))
+  @SubscribeMessage(SocketEventType.telemetries)
+  public handleMessage(client, telemetry: RawTelemetryItem) {
+    debugger
+    this.socketEvents$.next(new EmitTelemetry(telemetry))
   }
 
   public emitStates() {
-    this.socketEvents.next(new EmitState())
+    this.socketEvents$.next(new EmitState())
   }
 
-  public handleConnection(client: Client, ...args: any[]) {
-    debugger
+  public handleConnection(client, ...args: any[]) {
     if (!isEmptyArray(this.subsStore)) return
     this.logger.log('Websocket connected')
 
@@ -59,7 +58,7 @@ export class GeoPositionGateway implements OnGatewayConnection, OnGatewayDisconn
     )
   }
 
-  public handleDisconnect(client: Client) {
+  public handleDisconnect(client) {
     this.destroy$.next()
     this.destroy$.complete()
 
@@ -76,11 +75,11 @@ interface Action {
 }
 
 class EmitState implements Action {
-  readonly type = 'states'
+  readonly type = SocketEventType.states
 }
 
 class EmitTelemetry implements Action {
-  readonly type = 'telemetries'
+  readonly type = SocketEventType.telemetries
 
   constructor(public payload: RawTelemetryItem) {}
 }
