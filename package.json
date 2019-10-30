@@ -37,7 +37,7 @@
     "jdenticon": "^2.1.1",
     "js-yaml": "^3.13.1",
     "mime-types": "^2.1.24",
-    "mongoose": "^5.4.19",
+    "mongoose": "^5.7.5",
     "nest-schedule": "^0.5.0",
     "nestjs-typegoose": "^5.1.2",
     "passport": "^0.4.0",
